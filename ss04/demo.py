@@ -1,14 +1,17 @@
-myList = [1,"hello", True, None, 1.2]
-print(f"my list truoc khi thao tac = {myList}")
-#1.1 thêm phần tử vào cuối list -> append
-myList.append("Le dien Tien")
-print(f"my list sau khi append = {myList}")
-#1.2 thêm phần tử vào 1 vị trí chỉ định
-myList.insert(1,"Gud bye")
-print(f"my list sau khi insertt = {myList}")
-
-userInfo = {
-    "name": "Le Dien Tien",
-    "age" : 20
+products = {
+    "A": 120,
+    "B": 80,
+    "C": 300
 }
-print(userInfo)
+
+items_list = list(products.items())
+
+def get_price(item):
+    print(f"Python gọi get_price({item}) → {item[1]}")
+    return item[1]
+
+print("Bắt đầu gọi sorted...\n")
+sorted_list = sorted(items_list, key=get_price)
+
+print("\nKết quả sau khi sắp xếp:")
+print(sorted_list)
