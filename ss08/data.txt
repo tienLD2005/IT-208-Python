@@ -1,0 +1,5 @@
+Dòng 1: Đây là dòng đầu tiên
+Dòng 2: Python rất thú vị
+Dòng 3: Học lập trình mỗi ngày
+Dòng 4: File handling không khó
+Dòng 5: Kết thúc bài tập
