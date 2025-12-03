@@ -1,292 +1,236 @@
 import pandas as pd
 import numpy as np
-import seaborn as sns
 import matplotlib.pyplot as plt
 import os
 
 DATA_FILE = "data.csv"
 
 
-def tinh_xep_loai(diem_tb):
-    """Xác định xếp loại dựa vào điểm trung bình.
-
-    Args:
-        diem_tb (float): Điểm trung bình.
-
-    Returns:
-        str: Xếp loại tương ứng.
-    """
-    if diem_tb >= 8:
-        return "Giỏi"
-    elif diem_tb >= 6.5:
-        return "Khá"
-    elif diem_tb >= 5:
-        return "Trung Bình"
+def evaluate_grade(avg_score):
+    """Determine grade level based on average score."""
+    if avg_score >= 8:
+        return "Excellent"
+    elif avg_score >= 6.5:
+        return "Good"
+    elif avg_score >= 5:
+        return "Average"
     else:
-        return "Yếu"
+        return "Weak"
 
 
 def load_data():
-    """Load dữ liệu sinh viên từ file CSV.
-
-    Returns:
-        list: Danh sách sinh viên dạng list[dict].
-    """
+    """Load student data from CSV."""
     if os.path.exists(DATA_FILE):
         return pd.read_csv(DATA_FILE).to_dict(orient="records")
     return []
 
 
 def save_data(data):
-    """Lưu danh sách sinh viên vào file CSV.
-
-    Args:
-        data (list): Danh sách sinh viên.
-    """
+    """Save student list to CSV."""
     df = pd.DataFrame(data)
     df.to_csv(DATA_FILE, index=False)
-    print("✔ Đã lưu dữ liệu vào file data.csv")
+    print("Data saved to data.csv")
 
 
-def hien_thi(data):
-    """Hiển thị danh sách sinh viên dưới dạng bảng.
-
-    Args:
-        data (list): Danh sách sinh viên.
-    """
+def display_students(data):
+    """Display all students in table format."""
     if not data:
-        print("⚠ Không có sinh viên nào.")
+        print("No students available.")
         return
 
     df = pd.DataFrame(data)
     print(df.to_string(index=False))
 
 
-def them_sinh_vien(data):
-    """Thêm sinh viên mới vào danh sách.
+def add_student(data):
+    """Add a new student."""
+    student_id = input("Enter student ID: ")
 
-    Args:
-        data (list): Danh sách sinh viên.
-    """
-    ma = input("Nhập mã sinh viên: ")
-
-    if any(sv["id"] == ma for sv in data):
-        print("❌ Mã sinh viên đã tồn tại!")
+    if any(s["id"] == student_id for s in data):
+        print("Student ID already exists.")
         return
 
-    ten = input("Nhập tên sinh viên: ")
+    name = input("Enter student name: ")
 
     try:
-        toan = float(input("Điểm Toán: "))
-        ly = float(input("Điểm Lý: "))
-        hoa = float(input("Điểm Hóa: "))
+        math = float(input("Math score: "))
+        physics = float(input("Physics score: "))
+        chemistry = float(input("Chemistry score: "))
 
-        if not all(0 <= x <= 10 for x in [toan, ly, hoa]):
-            print("❌ Điểm phải trong khoảng 0-10!")
+        if not all(0 <= x <= 10 for x in [math, physics, chemistry]):
+            print("Scores must be in range 0-10.")
             return
 
-        diem_tb = round((toan + ly + hoa) / 3, 2)
-        xep_loai = tinh_xep_loai(diem_tb)
+        avg_score = round((math + physics + chemistry) / 3, 2)
+        grade = evaluate_grade(avg_score)
 
         data.append({
-            "id": ma,
-            "ten": ten,
-            "diem_toan": toan,
-            "diem_ly": ly,
-            "diem_hoa": hoa,
-            "diem_tb": diem_tb,
-            "xep_loai": xep_loai
+            "id": student_id,
+            "name": name,
+            "math": math,
+            "physics": physics,
+            "chemistry": chemistry,
+            "avg_score": avg_score,
+            "grade": grade
         })
 
-        print("✔ Thêm sinh viên thành công!")
+        print("Student added successfully.")
     except ValueError:
-        print("❌ Điểm phải là số!")
+        print("Scores must be numeric.")
 
 
-def cap_nhat(data):
-    """Cập nhật điểm số của sinh viên theo mã.
+def update_student(data):
+    """Update student scores."""
+    student_id = input("Enter student ID to update: ")
 
-    Args:
-        data (list): Danh sách sinh viên.
-    """
-    ma = input("Nhập mã sinh viên cần cập nhật: ")
-
-    for sv in data:
-        if sv["id"] == ma:
+    for s in data:
+        if s["id"] == student_id:
             try:
-                sv["diem_toan"] = float(input("Điểm Toán mới: "))
-                sv["diem_ly"] = float(input("Điểm Lý mới: "))
-                sv["diem_hoa"] = float(input("Điểm Hóa mới: "))
+                s["math"] = float(input("New Math score: "))
+                s["physics"] = float(input("New Physics score: "))
+                s["chemistry"] = float(input("New Chemistry score: "))
 
-                sv["diem_tb"] = round(
-                    (sv["diem_toan"] + sv["diem_ly"] + sv["diem_hoa"]) / 3, 2
+                s["avg_score"] = round(
+                    (s["math"] + s["physics"] + s["chemistry"]) / 3, 2
                 )
-                sv["xep_loai"] = tinh_xep_loai(sv["diem_tb"])
+                s["grade"] = evaluate_grade(s["avg_score"])
 
-                print("✔ Cập nhật thành công!")
+                print("Update successful.")
             except ValueError:
-                print("❌ Điểm phải là số!")
+                print("Scores must be numeric.")
             return
 
-    print("❌ Không tìm thấy sinh viên!")
+    print("Student not found.")
 
 
-def xoa(data):
-    """Xóa sinh viên khỏi danh sách theo mã.
+def delete_student(data):
+    """Delete student by ID."""
+    student_id = input("Enter student ID to delete: ")
 
-    Args:
-        data (list): Danh sách sinh viên.
-    """
-    ma = input("Nhập mã sinh viên cần xóa: ")
-
-    for sv in data:
-        if sv["id"] == ma:
-            xac_nhan = input("Bạn có chắc muốn xóa? (y/n): ")
-            if xac_nhan.lower() == "y":
-                data.remove(sv)
-                print("✔ Đã xóa sinh viên.")
+    for s in data:
+        if s["id"] == student_id:
+            confirm = input("Are you sure you want to delete? (y/n): ")
+            if confirm.lower() == "y":
+                data.remove(s)
+                print("Student deleted.")
             return
 
-    print("❌ Không tìm thấy sinh viên!")
+    print("Student not found.")
 
 
-def tim_kiem(data):
-    """Tìm kiếm sinh viên theo mã hoặc tên gần đúng.
+def search_student(data):
+    """Search student by ID or name."""
+    keyword = input("Enter student ID or name: ").lower()
 
-    Args:
-        data (list): Danh sách sinh viên.
-    """
-    tu_khoa = input("Nhập mã hoặc tên sinh viên: ").lower()
-
-    ket_qua = [
-        sv for sv in data
-        if tu_khoa in sv["id"].lower() or tu_khoa in sv["ten"].lower()
+    result = [
+        s for s in data
+        if keyword in s["id"].lower() or keyword in s["name"].lower()
     ]
 
-    if ket_qua:
-        hien_thi(ket_qua)
+    if result:
+        display_students(result)
     else:
-        print("❌ Không tìm thấy sinh viên!")
+        print("No students found.")
 
 
-def sap_xep(data):
-    """Sắp xếp danh sách sinh viên theo điểm TB hoặc tên.
+def sort_students(data):
+    """Sort students by average score or name."""
+    print("1. Sort by average score (descending)")
+    print("2. Sort by name (A-Z)")
+    choice = input("Choose option: ")
 
-    Args:
-        data (list): Danh sách sinh viên.
-    """
-    print("1. Sắp xếp theo điểm TB giảm dần")
-    print("2. Sắp xếp theo tên A-Z")
-    chon = input("Chọn kiểu sắp xếp: ")
-
-    if chon == "1":
-        data.sort(key=lambda sv: sv["diem_tb"], reverse=True)
-        print("✔ Đã sắp xếp theo điểm TB.")
-    elif chon == "2":
-        data.sort(key=lambda sv: sv["ten"])
-        print("✔ Đã sắp xếp theo tên.")
+    if choice == "1":
+        data.sort(key=lambda s: s["avg_score"], reverse=True)
+        print("Sorted by average score.")
+    elif choice == "2":
+        data.sort(key=lambda s: s["name"])
+        print("Sorted by name.")
     else:
-        print("❌ Lựa chọn không hợp lệ!")
+        print("Invalid choice.")
 
 
-def thong_ke(data):
-    """Thống kê số lượng sinh viên theo từng xếp loại.
-
-    Args:
-        data (list): Danh sách sinh viên.
-
-    Returns:
-        Series: Thống kê dạng pandas.Series.
-    """
+def statistics(data):
+    """Count students by grade."""
     df = pd.DataFrame(data)
-    counts = df["xep_loai"].value_counts()
+    counts = df["grade"].value_counts()
 
-    print("\n📊 THỐNG KÊ XẾP LOẠI:")
+    print("\nGRADE STATISTICS:")
     print(counts)
 
     return counts
 
 
-def ve_bieu_do(data):
-    """Vẽ biểu đồ cột hoặc tròn dựa trên thống kê xếp loại.
+def draw_chart(data):
+    """Draw bar or pie chart for grade statistics."""
+    counts = statistics(data)
 
-    Args:
-        data (list): Danh sách sinh viên.
-    """
-    counts = thong_ke(data)
-
-    print("\n1. Biểu đồ cột")
-    print("2. Biểu đồ tròn")
-    chon = input("Chọn kiểu biểu đồ: ")
+    print("\n1. Bar chart")
+    print("2. Pie chart")
+    choice = input("Choose chart type: ")
 
     plt.figure()
-
-    if chon == "1":
+    if choice == "1":
         counts.plot(kind="bar")
-        plt.title("Thống kê xếp loại")
-        plt.xlabel("Xếp loại")
-        plt.ylabel("Số lượng")
+        plt.title("Grade Statistics")
+        plt.xlabel("Grade")
+        plt.ylabel("Count")
 
-    elif chon == "2":
+    elif choice == "2":
         counts.plot(kind="pie", autopct="%1.1f%%")
-        plt.title("Tỷ lệ xếp loại")
+        plt.title("Grade Distribution")
 
     else:
-        print("❌ Lựa chọn không hợp lệ!")
+        print("Invalid choice.")
         return
 
     plt.tight_layout()
-
-    # ⭐ Quan trọng: KHÔNG chặn chương trình
     plt.show(block=False)
-
-    print("✔ Biểu đồ đã mở. Quay lại menu...")
-
+    print("Chart opened. Returning to menu...")
 
 
 def menu():
-    """Menu điều khiển CLI của chương trình."""
+    """Main program menu."""
     data = load_data()
 
     while True:
-        print("\n====== MENU QUẢN LÝ SINH VIÊN ======")
-        print("1. Hiển thị danh sách")
-        print("2. Thêm sinh viên")
-        print("3. Cập nhật sinh viên")
-        print("4. Xóa sinh viên")
-        print("5. Tìm kiếm")
-        print("6. Sắp xếp")
-        print("7. Thống kê điểm TB")
-        print("8. Vẽ biểu đồ")
-        print("9. Lưu dữ liệu")
-        print("10. Thoát")
+        print("\n====== STUDENT MANAGEMENT MENU ======")
+        print("1. Display all students")
+        print("2. Add student")
+        print("3. Update student")
+        print("4. Delete student")
+        print("5. Search")
+        print("6. Sort")
+        print("7. Statistics")
+        print("8. Draw chart")
+        print("9. Save data")
+        print("10. Exit")
 
-        chon = input("Chọn chức năng: ")
+        choice = input("Choose option: ")
 
-        if chon == "1":
-            hien_thi(data)
-        elif chon == "2":
-            them_sinh_vien(data)
-        elif chon == "3":
-            cap_nhat(data)
-        elif chon == "4":
-            xoa(data)
-        elif chon == "5":
-            tim_kiem(data)
-        elif chon == "6":
-            sap_xep(data)
-        elif chon == "7":
-            thong_ke(data)
-        elif chon == "8":
-            ve_bieu_do(data)
-        elif chon == "9":
+        if choice == "1":
+            display_students(data)
+        elif choice == "2":
+            add_student(data)
+        elif choice == "3":
+            update_student(data)
+        elif choice == "4":
+            delete_student(data)
+        elif choice == "5":
+            search_student(data)
+        elif choice == "6":
+            sort_students(data)
+        elif choice == "7":
+            statistics(data)
+        elif choice == "8":
+            draw_chart(data)
+        elif choice == "9":
             save_data(data)
-        elif chon == "10":
+        elif choice == "10":
             save_data(data)
-            print("👋 Thoát chương trình.")
+            print("Exiting program.")
             break
         else:
-            print("❌ Lựa chọn không hợp lệ!")
+            print("Invalid choice.")
 
 
 if __name__ == "__main__":
